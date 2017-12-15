@@ -1,20 +1,11 @@
 'use strict';
 /* global $ */
 
-let SESSION_TOKEN = '';
 
-let QUESTIONS = [];
 
-const BASE_API_URL = new URL('https://opentdb.com');
-const SESSION_TOKEN_REQUEST_PATH = '/api_token.php?command=request';
-const TRIVIA_CATAGORY_REQUEST_URL = '/api.php?amount=1&category=16&difficulty=easy&type=multiple';
 
-let triviaInputValues = {
-    category: 16,
-    amount: 3,
-    type: 'multiple',
-    difficulty: 'easy'
-};
+
+
 
 const STORE = {
     startQuiz: false,
@@ -49,46 +40,44 @@ const CATEGORIES = [{
     },
 ];
 class TriviaApp {
-    constructor() {
-
-        } //trivia app constructor
-
-    getQuestion(triviaInputValues) {
-            $.getJSON(BASE_API_URL + TRIVIA_CATAGORY_REQUEST_URL, triviaInputValues, decorateQuesition);
-        } //TriviaApp::getQuestion
-
-    getNextQuestion() {
-        console.log('getNextQuestion');
-        const question = renderQuestion(QUESTIONS[STORE.index]);
-
-        $('#questions').html(question);
-        handleAnswerClick();
-    }
-    decorateQuesition(response) {
-        console.log('Enter decorateQuestion');
-        QUESTIONS = response.results;
-        console.log(QUESTIONS);
-        getNextQuestion();
-    }
-    getSessionToken(response) {
-        $.getJSON(BASE_API_URL + SESSION_TOKEN_REQUEST_PATH, sessionTokenResponse);
-        SESSION_TOKEN = response.token;
-        console.log(`Session Token: ${SESSION_TOKEN}`);
-    }
-    setSessionCategories() {
-
-        } //TriviaApp::getSessionToken
+    constructor(userInputs) {
+        this.QUESTIONS = []
 
 
-    setStatus() {
+    };
 
-        } //TriviaApp::setStatus
+} //trivia app constructor
+
+
+getQuestion(triviaInputValues) {
+        $.getJSON(BASE_API_URL + TRIVIA_CATAGORY_REQUEST_URL, triviaInputValues, decorateQuesition);
+    } //TriviaApp::getQuestion
+
+getNextQuestion() {
+    console.log('getNextQuestion');
+    const question = renderQuestion(QUESTIONS[STORE.index]);
+
+    $('#questions').html(question);
+    handleAnswerClick();
+}
+decorateQuesition(response) {
+    console.log('Enter decorateQuestion');
+    QUESTIONS = response.results;
+    console.log(QUESTIONS);
+    getNextQuestion();
+}
+
+
+
+setStatus() {
+
+    } //TriviaApp::setStatus
 
 } //TriviaApp class
 
 
 class RenderApp {
-    constructor() {
+    constructor(render) {
 
         } //render app constructor
 
@@ -128,19 +117,52 @@ renderStatus() {
 
     } //renderStatus
 
-} //class renderApp
+}; //class renderApp
+
+Class API {
+    constructor() {
+
+        this.SESSION_TOKEN = _fetchSessionKey;
+
+        this.setSessionCategories(category = 16, amt = 1, type = 'multiple', difficulty = 'easy');
+    }
+
+    //private methods
+    _buildSessionURL() {
+        return BASE_API_URL + '/api_token.php?command=request';
+    }
+    _buildCategoryURL() {
+        return BASE_API_URL + '/api.php?';
+    }
+    _fetchSessionKey() {
+        let url = _buildSessionURL();
+        $.getJSON(url, setSessionToken);
+    }
+
+    //public methods
+    setSessionToken(response) {
+            SESSION_TOKEN = response.token;
+            console.log(`Session Token: ${SESSION_TOKEN}`);
+            return SESSION_TOKEN;
+        } //API::setSessionToken
+
+    setSessionCategories(category, amt, type, difficulty) {
+            let url = _buildCategoryURL;
+            let triviaInputValues = {
+                category = category,
+                amount = amt,
+                type = type,
+                difficulty = easy,
+            };
+            $.getJSON(url, triviaInputValues);
+        } //API::setSessionCategories
 
 
 
 
+} //Class API
 
-
-
-
-
-
-
-
+API.prototype.BASE_API_URL = 'https://opentdb.com';
 
 function showResults() {
     console.log('showResults ran');
@@ -192,9 +214,6 @@ function handleAnswerClick() {
     });
 }
 
-
-
-
 function handleNextClick() {
     $('.next').click(event => {
         console.log('HandleNextClick ran');
@@ -221,8 +240,6 @@ function handleStartQuizClick() {
         triviaInputValues.amount = number;
         console.log(number);
     });
-
-
 }
 
 function handleUserInput() {
@@ -242,6 +259,8 @@ function handleUserInput() {
 
     $('.startQuiz').attr('enable');
 }
+
+// let quiz = new TriviaApp();
 
 
 $(handleUserInput);
