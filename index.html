@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Believeland Quiz Applicaiton</title>
+    <link href="index.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <header>
+        <h1>LETS PLAY TRIVIA!</h1>
+        <h2>How well do you know your Trivia</h2>
+        <div class="triviaSelection">
+            <label>Select Trivia Catagory</label>
+            <select class="triviaDropDown">
+                <option value = "scienceNature">Science and Nature</option>>
+                <option value = "history">History</option>>
+                <option value = "computers">Computers</option>>
+                <option value = "generalKnowledge">General Knowledge</option>>
+                <option value = "boardGames">Board Games</option>>
+                <option value = "Music">Music</option>>
+            </select>
+            <label for="number-of-questions">Number of questions:</label>
+            <input type="number" name="number-of-questions" id="num-questions-entry">
+        </div>
+        <h3 class="buttonControl">
+            <button disable class="startQuiz">Take the Quiz!</button>
+        </h3>
+    </header>
+
+    <form id="questions">
+        <div class="responses">
+
+        </div>
+    </form>
+
+    <script src="//code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+</body>
+
+</html>
