@@ -1,200 +1,204 @@
 'use strict';
 /* global $ */
 
-
-
-
-
-
-
-const STORE = {
-    startQuiz: false,
-    index: 0,
-    CORRECT_ANSWERS: [],
-    totalQuestions: QUESTIONS.length,
-};
-
 const CATEGORIES = [{
-        id: 9,
-        name: 'General Knowledge',
-    },
-    {
-        id: 18,
-        name: 'Computers',
-    },
-    {
-        id: 17,
-        name: 'Science & Nature',
-    },
-    {
-        id: 23,
-        name: 'History',
-    },
-    {
-        id: 16,
-        name: 'Board Games',
-    },
-    {
-        id: 12,
-        name: 'Music',
-    },
+  id: 9,
+  name: 'General Knowledge',
+},
+{
+  id: 18,
+  name: 'Computers',
+},
+{
+  id: 17,
+  name: 'Science & Nature',
+},
+{
+  id: 23,
+  name: 'History',
+},
+{
+  id: 16,
+  name: 'Board Games',
+},
+{
+  id: 12,
+  name: 'Music',
+},
 ];
+
+let QUESTIONS = [];
+
 class TriviaApp {
-    constructor(userInputs) {
-        this.QUESTIONS = []
+
+  constructor() {
+    this.STORE = {};
+  } //TriviaApp::constructor
+
+  //Public Methods
+
+  getQuestions(triviaInputValues) {
+
+  } //TriviaApp::getQuestion
 
 
+  setSTORE(start, index, correctAnswers, totalQuestions) {
+    this.STORE = {
+      startQuiz: start,
+      index: index,
+      CORRECT_ANSWERS: correctAnswers,
+      totalQuestions: totalQuestions,
     };
+  }
 
-} //trivia app constructor
+  getSTORE() {
+    return this.STORE;
+  }
+  /*
+                                                                            setResults() {
+                                                                              console.log('showResults ran');
 
+                                                                              var finalResults = STORE.index;
+                                                                              for (var i = STORE.index; i < STORE.CORRECT_ANSWERS.length; i++)
+                                                                                if (STORE.CORRECT_ANSWERS[i])
+                                                                                  finalResults++;
+                                                                            } //TriviaApp::setResults
 
-getQuestion(triviaInputValues) {
-        $.getJSON(BASE_API_URL + TRIVIA_CATAGORY_REQUEST_URL, triviaInputValues, decorateQuesition);
-    } //TriviaApp::getQuestion
+                                                                            setStatus() {
 
-getNextQuestion() {
-    console.log('getNextQuestion');
-    const question = renderQuestion(QUESTIONS[STORE.index]);
-
-    $('#questions').html(question);
-    handleAnswerClick();
-}
-decorateQuesition(response) {
-    console.log('Enter decorateQuestion');
-    QUESTIONS = response.results;
-    console.log(QUESTIONS);
-    getNextQuestion();
-}
-
-
-
-setStatus() {
-
-    } //TriviaApp::setStatus
-
+                                                                            } //TriviaApp::setStatus
+                                                                          */
 } //TriviaApp class
 
 
-class RenderApp {
-    constructor(render) {
+class Render {
+  constructor() {
 
-        } //render app constructor
+  } //render app constructor
 
-    renderQuestion(item) {
-        console.log('renderQuestion ran');
-        return `<p>${item.question}</p>
+
+
+  //Private Methods
+  _questionTemplate(item) {
+    console.log('renderQuestion ran');
+    return `<p>${item.question}</p>
       <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[0]}> ${item.incorrect_answers[0]}<br>
       <input type= "radio" name= "answer" id= "radio" value= ${item.correct_answer}> ${item.correct_answer}<br>
       <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[2]}> ${item.incorrect_answers[2]}<br>
       <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[1]}> ${item.incorrect_answers[1]}<br>`;
+  } //_questionTemplate
+
+  //Public Methods
+  renderQuestion() {
+    $('#questions').addClass('quizContent');
+    console.log('Question number = ' + QUESTIONS[quiz.getSTORE().index]);
+    let question = this._questionTemplate(QUESTIONS[quiz.getSTORE().index]);
+
+    $('#questions').html(question);
+    // handleAnswerClick();
+  } //renderQuestion
+
+
+  renderStartNextButtons() {
+    console.log('renderStartNextButtonsText ran');
+    if (quiz.STORE.startQuiz) {
+      $('.buttonControl').append('<button class= "next">Next</button>');
+      $('.startQuiz').remove();
+      // handleNextClick();
+    } else {
+      $('.buttonControl').append('<button class= "startQuiz">Take the Quiz!</button>');
+      $('.next').remove();
+      // handleNextClick();
     }
-} //renderQuestion
+  } //renderStartNextButton
+  /*
+                                                                                  renderResultsAndStatus() {
+                                                                                    $('p').remove();
+                                                                                    $('#radio').remove();
+                                                                                    $('#questions').html(' ');
+                                                                                    $('#questions').addClass('results');
+                                                                                    $('.results').append(`<p>Correct answer is: ${QUESTIONS[STORE.index-1].correct_answer}</p><br>`);
+                                                                                    console.log(triviaInputValues.amount);
+                                                                                    console.log(STORE.index);
+                                                                                    if (STORE.index != triviaInputValues.amount) {
+                                                                                      $('.results').append(`<p>Your current score is: ${finalResults} out of ${triviaInputValues.amount} correct answers</p>`);
+                                                                                    } else {
+                                                                                      $('.results').append(`<p>Your Final score is: ${finalResults} out of ${triviaInputValues.amount} correct answers</p>`);
+                                                                                      STORE.startQuiz = false;
+                                                                                      STORE.totalQuestions = STORE.index;
+                                                                                      STORE.index = 0;
+                                                                                      // STORE.CORRECT_ANSWERS = 0;
+                                                                                      changeButton();
+                                                                                      handleStartQuizClick();
 
-renderAppStatus() {
+                                                                                    }
+                                                                                  } //renderResultsAndStatus
+                                                                                */
 
-    } //render app status
+} //class Render
 
-renderStartNextButtons() {
-        console.log('renderStartNextButtonsText ran');
+class API {
+  constructor() {
+    this.BASE_API_URL = 'https://opentdb.com';
+    this.SESSION_TOKEN = this._fetchSessionKey();
+    this.triviaInputValues = {};
+  }
 
-        if (STORE.startQuiz) {
-            $('.buttonControl').append('<button class= "next">Next</button>');
-            $('.startQuiz').remove();
-            handleNextClick();
-        } else {
-            $('.buttonControl').append('<button class= "startQuiz">Take the Quiz!</button>');
-            $('.next').remove();
-            handleNextClick();
-        }
-    } //renderStartNextButton
+  //private methods
+  _buildSessionURL() {
+    console.log('_buildSessionURL ran');
+    return this.BASE_API_URL + '/api_token.php?command=request';
+  }
+  _buildCategoryURL() {
+    console.log('_buildCategoryURL ran');
+    return this.BASE_API_URL + `/api.php?amount=${this.triviaInputValues.amount}&category=${this.triviaInputValues.category}&difficulty=${this.triviaInputValues.difficulty}&type=${this.triviaInputValues.type}`;
+  }
+  _fetchSessionKey() {
+    console.log('_fetchSessionKey ran');
+    let url = this._buildSessionURL();
+    $.getJSON(url, this.setSessionToken);
+  }
 
-renderResults() {
+  _setQuestions(response) {
+    QUESTIONS = response.results;
+    console.log('_setQuestion ran = ' + QUESTIONS);
+  }
 
-    } //renderResults
+  //public methods
+  setSessionToken(response) {
+    console.log('setSessionToken ran');
+    console.log(`Session Token: ${response.token}`);
+    return response.token;
+  } //API::setSessionToken
 
-renderStatus() {
+  getSessionToken() {
+    console.log(`getSessionToken ran ${this.SESSION_TOKEN}`);
+    return this.SESSION_TOKEN;
+  }
 
-    } //renderStatus
+  getTriviaInputValues() {
+    return this.triviaInputValues;
+  }
 
-}; //class renderApp
+  setTriviaInputValues(category = 16, amt = 1, type = 'multiple', difficulty = 'easy') {
+    this.triviaInputValues = {
+      category: category,
+      amount: amt,
+      type: type,
+      difficulty: difficulty,
+    };
+  }
 
-Class API {
-    constructor() {
-
-        this.SESSION_TOKEN = _fetchSessionKey;
-
-        this.setSessionCategories(category = 16, amt = 1, type = 'multiple', difficulty = 'easy');
-    }
-
-    //private methods
-    _buildSessionURL() {
-        return BASE_API_URL + '/api_token.php?command=request';
-    }
-    _buildCategoryURL() {
-        return BASE_API_URL + '/api.php?';
-    }
-    _fetchSessionKey() {
-        let url = _buildSessionURL();
-        $.getJSON(url, setSessionToken);
-    }
-
-    //public methods
-    setSessionToken(response) {
-            SESSION_TOKEN = response.token;
-            console.log(`Session Token: ${SESSION_TOKEN}`);
-            return SESSION_TOKEN;
-        } //API::setSessionToken
-
-    setSessionCategories(category, amt, type, difficulty) {
-            let url = _buildCategoryURL;
-            let triviaInputValues = {
-                category = category,
-                amount = amt,
-                type = type,
-                difficulty = easy,
-            };
-            $.getJSON(url, triviaInputValues);
-        } //API::setSessionCategories
-
-
-
+  setSessionQuestions(triviaInputValues) {
+    console.log('setSessionQuestions ran');
+    let url = this._buildCategoryURL();
+    $.getJSON(url, triviaInputValues, this._setQuestions);
+    // this.getNextQuestion();;
+  } //API::setSessionQuestions
 
 } //Class API
 
-API.prototype.BASE_API_URL = 'https://opentdb.com';
-
-function showResults() {
-    console.log('showResults ran');
-
-    var finalResults = STORE.index;
-
-    for (var i = STORE.index; i < STORE.CORRECT_ANSWERS.length; i++)
-        if (STORE.CORRECT_ANSWERS[i])
-            finalResults++;
-
-
-    $('p').remove();
-    $('#radio').remove();
-    $('#questions').html(' ');
-    $('#questions').addClass('results');
-    $('.results').append(`<p>Correct answer is: ${QUESTIONS[STORE.index-1].correct_answer}</p><br>`);
-    console.log(triviaInputValues.amount);
-    console.log(STORE.index);
-    if (STORE.index != triviaInputValues.amount) {
-        $('.results').append(`<p>Your current score is: ${finalResults} out of ${triviaInputValues.amount} correct answers</p>`);
-    } else {
-        $('.results').append(`<p>Your Final score is: ${finalResults} out of ${triviaInputValues.amount} correct answers</p>`);
-        STORE.startQuiz = false;
-        STORE.totalQuestions = STORE.index;
-        STORE.index = 0;
-        // STORE.CORRECT_ANSWERS = 0;
-        renderStartNextButtons();
-        handleStartQuizClick();
-
-    }
-}
-
+/*
 function handleAnswerClick() {
 
     $('input[name="answer"]').on('click', event => {
@@ -224,46 +228,58 @@ function handleNextClick() {
             showResults();
     });
 }
-
+*/
 
 function handleStartQuizClick() {
-    $('.startQuiz').click(event => {
-        console.log('handleStartQuizClick ran,');
-        //add functionality to get values from the user and populate to triviaInputValues
-        getQuestionFromApi(triviaInputValues);
-        STORE.startQuiz = true;
-        renderStartNextButtons();
-        $('#questions').addClass('quizContent');
+  $('.startQuiz').click(event => {
+    console.log('handleStartQuizClick ran,');
 
-        console.log('num-questions-entry ran');
-        let number = $('#num-questions-entry').val();
-        triviaInputValues.amount = number;
-        console.log(number);
-    });
+    //get number of questions user input
+    let number = $('#num-questions-entry').val();
+    console.log('Get number = ' + number);
+
+    //set number of questions in triviaInputValue object
+    api.setTriviaInputValues(api.triviaInputValues.category, number);
+
+    //request questions from API
+    api.setSessionQuestions(api.getTriviaInputValues);
+
+    //set STORE values to start of quiz
+    quiz.setSTORE(true, 0, 0, QUESTIONS.length);
+
+    render.renderStartNextButtons();
+    // render.renderQuestion();
+  });
 }
 
 function handleUserInput() {
-    $('.triviaDropDown').on('click', event => {
-        console.log('handleUserInput ran');
+  $('.triviaDropDown').on('click', event => {
+    console.log('handleTriviaDropDown ran');
+    let input = $('.triviaDropDown option:checked').text();
 
-        var input = $('.triviaDropDown option:checked').text();
-        console.log(input);
+    //get quiz category from user input
+    CATEGORIES.find(object => {
+      if (object.name === input) {
+        input = object.id;
+        console.log(object);
+      } //end if
 
-        CATEGORIES.find(object => {
-            if (object.name === input) {
-                console.log(object);
-                triviaInputValues.category = object.id;
-            }
-        });
-    });
+      //set the category in triviaInputValues object
+      api.setTriviaInputValues(input);
 
-    $('.startQuiz').attr('enable');
-}
+    }); //end find category number
+  }); //end on click - category
 
-// let quiz = new TriviaApp();
+  // $('.startQuiz').attr('enable');
 
+} //handleUserInput
+
+//instantiate new API, Quiz and Render objects
+let api = new API();
+let quiz = new TriviaApp();
+let render = new Render();
 
 $(handleUserInput);
 $(handleStartQuizClick);
-$(handleNextClick);
-$(handleAnswerClick);
+// $(handleNextClick);
+// $(handleAnswerClick);
