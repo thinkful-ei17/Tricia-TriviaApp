@@ -37,16 +37,11 @@ class TriviaApp {
 
   //Public Methods
 
-  getQuestions(triviaInputValues) {
-
-  } //TriviaApp::getQuestion
-
-
   setSTORE(start, index, correctAnswers, totalQuestions) {
     this.STORE = {
       startQuiz: start,
       index: index,
-      CORRECT_ANSWERS: correctAnswers,
+      correctAnswers: correctAnswers,
       totalQuestions: totalQuestions,
     };
   }
@@ -54,20 +49,21 @@ class TriviaApp {
   getSTORE() {
     return this.STORE;
   }
-  /*
-                                                                            setResults() {
-                                                                              console.log('showResults ran');
 
-                                                                              var finalResults = STORE.index;
-                                                                              for (var i = STORE.index; i < STORE.CORRECT_ANSWERS.length; i++)
-                                                                                if (STORE.CORRECT_ANSWERS[i])
-                                                                                  finalResults++;
-                                                                            } //TriviaApp::setResults
+  incrementSTOREIndex() {
+    this.STORE.index++;
+  }
 
-                                                                            setStatus() {
+  incrementCorrectAnswers() {
+    this.STORE.correctAnswers++;
+  }
 
-                                                                            } //TriviaApp::setStatus
-                                                                          */
+  startNewQuiz() {
+    this.STORE.index = 0;
+    this.STORE.startQuiz = false;
+    this.STORE.correctAnswers = 0;
+    this.totalQuestions = 0;
+  }
 } //TriviaApp class
 
 
@@ -76,12 +72,10 @@ class Render {
 
   } //render app constructor
 
-
-
   //Private Methods
   _questionTemplate(item) {
-    console.log('renderQuestion ran');
-    return `<p>${item.question}</p>
+    console.log('_questionTemplate ran');
+    return `<p>Question ${quiz.STORE.index+1}: ${item.question}</p>
       <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[0]}> ${item.incorrect_answers[0]}<br>
       <input type= "radio" name= "answer" id= "radio" value= ${item.correct_answer}> ${item.correct_answer}<br>
       <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[2]}> ${item.incorrect_answers[2]}<br>
@@ -90,12 +84,15 @@ class Render {
 
   //Public Methods
   renderQuestion() {
+    console.log('renderQuestion ran');
     $('#questions').addClass('quizContent');
-    console.log('Question number = ' + QUESTIONS[quiz.getSTORE().index]);
-    let question = this._questionTemplate(QUESTIONS[quiz.getSTORE().index]);
+    console.log('renderQuestion question =  ' + QUESTIONS[0].correct_answer);
+    console.log('renderQuestion index = ' + quiz.STORE.index);
+    let question = this._questionTemplate(QUESTIONS[quiz.STORE.index]);
 
     $('#questions').html(question);
-    // handleAnswerClick();
+    handleAnswerClick();
+
   } //renderQuestion
 
 
@@ -104,36 +101,33 @@ class Render {
     if (quiz.STORE.startQuiz) {
       $('.buttonControl').append('<button class= "next">Next</button>');
       $('.startQuiz').remove();
-      // handleNextClick();
+      handleNextClick();
     } else {
       $('.buttonControl').append('<button class= "startQuiz">Take the Quiz!</button>');
       $('.next').remove();
-      // handleNextClick();
+      handleNextClick();
     }
   } //renderStartNextButton
-  /*
-                                                                                  renderResultsAndStatus() {
-                                                                                    $('p').remove();
-                                                                                    $('#radio').remove();
-                                                                                    $('#questions').html(' ');
-                                                                                    $('#questions').addClass('results');
-                                                                                    $('.results').append(`<p>Correct answer is: ${QUESTIONS[STORE.index-1].correct_answer}</p><br>`);
-                                                                                    console.log(triviaInputValues.amount);
-                                                                                    console.log(STORE.index);
-                                                                                    if (STORE.index != triviaInputValues.amount) {
-                                                                                      $('.results').append(`<p>Your current score is: ${finalResults} out of ${triviaInputValues.amount} correct answers</p>`);
-                                                                                    } else {
-                                                                                      $('.results').append(`<p>Your Final score is: ${finalResults} out of ${triviaInputValues.amount} correct answers</p>`);
-                                                                                      STORE.startQuiz = false;
-                                                                                      STORE.totalQuestions = STORE.index;
-                                                                                      STORE.index = 0;
-                                                                                      // STORE.CORRECT_ANSWERS = 0;
-                                                                                      changeButton();
-                                                                                      handleStartQuizClick();
 
-                                                                                    }
-                                                                                  } //renderResultsAndStatus
-                                                                                */
+  renderResultsAndStatus() {
+    $('p').remove();
+    $('#radio').remove();
+    $('#questions').html(' ');
+    $('#questions').addClass('results');
+    $('.results').append(`<p>Correct answer is: ${QUESTIONS[quiz.STORE.index-1].correct_answer}</p><br>`);
+
+    if (quiz.STORE.index !== api.getTriviaInputValues().amount) {
+      $('.results').append(`<p>Your current score is: ${quiz.STORE.correctAnswers} out of ${quiz.STORE.index} correct answers</p>`);
+    } else {
+      //start a new game
+      $('.results').append(`<p>Your Final score is: ${quiz.STORE.correctAnswers} out of ${api.getTriviaInputValues().amount} correct answers</p>`);
+      quiz.startNewQuiz();
+      render.renderStartNextButtons();
+      handleStartQuizClick();
+
+    }
+  } //renderResultsAndStatus
+
 
 } //class Render
 
@@ -160,19 +154,30 @@ class API {
   }
 
   _setQuestions(response) {
-    QUESTIONS = response.results;
-    console.log('_setQuestion ran = ' + QUESTIONS);
+    console.log(`_setQuestion ran:  ${response.results}`);
+    this.QUESTION = response.results;
   }
 
   //public methods
+  setSessionQuestions() {
+    console.log('setSessionQuestions ran');
+    let url = this._buildCategoryURL();
+    $.getJSON(url, function(response) {
+      QUESTIONS = response.results;
+      console.log('setSessionQuestions: QUESTIONS[0] = ' + QUESTIONS[0].question);
+      render.renderQuestion();
+    });
+
+  }
+
   setSessionToken(response) {
     console.log('setSessionToken ran');
-    console.log(`Session Token: ${response.token}`);
+    console.log(`Session Token: ${ response.token }`);
     return response.token;
   } //API::setSessionToken
 
   getSessionToken() {
-    console.log(`getSessionToken ran ${this.SESSION_TOKEN}`);
+    console.log(`getSessionToken ran ${this.SESSION_TOKEN }`);
     return this.SESSION_TOKEN;
   }
 
@@ -189,46 +194,40 @@ class API {
     };
   }
 
-  setSessionQuestions(triviaInputValues) {
-    console.log('setSessionQuestions ran');
-    let url = this._buildCategoryURL();
-    $.getJSON(url, triviaInputValues, this._setQuestions);
-    // this.getNextQuestion();;
-  } //API::setSessionQuestions
+  //API::setSessionQuestions
 
 } //Class API
 
-/*
+
 function handleAnswerClick() {
 
-    $('input[name="answer"]').on('click', event => {
-        console.log('handleAnswerClick ran');
-        var answer = $('input[name="answer"]:checked').val();
+  $('input[name="answer"]').on('click', event => {
+    console.log('handleAnswerClick ran');
+    var answer = $('input[name="answer"]:checked').val();
 
-        if (answer === QUESTIONS[STORE.index].correct_answer) {
-            STORE.CORRECT_ANSWERS[STORE.index] = 1;
-        } else {
-            STORE.CORRECT_ANSWERS[STORE.index] = STORE.index;
-        }
-        STORE.index++;
-        showResults();
-        console.log(STORE.index);
-        console.log(STORE.CORRECT_ANSWERS[STORE.index]);
+    if (answer === QUESTIONS[quiz.STORE.index].correct_answer) {
+      quiz.incrementCorrectAnswers();
+    }
 
-    });
+    quiz.incrementSTOREIndex();
+    render.renderResultsAndStatus();
+    console.log(quiz.STORE.index);
+    console.log(quiz.STORE.correctAnswers);
+
+  });
 }
 
 function handleNextClick() {
-    $('.next').click(event => {
-        console.log('HandleNextClick ran');
-        console.log(STORE.index, QUESTIONS.length);
-        if (STORE.index < QUESTIONS.length)
-            getNextQuestion();
-        else
-            showResults();
-    });
+  $('.next').click(event => {
+    console.log('HandleNextClick ran');
+    console.log(quiz.STORE.index, QUESTIONS.length);
+    if (quiz.STORE.index < QUESTIONS.length)
+      render.renderQuestion();
+    else
+      render.renderResultsAndStatus();
+  });
 }
-*/
+
 
 function handleStartQuizClick() {
   $('.startQuiz').click(event => {
@@ -238,18 +237,20 @@ function handleStartQuizClick() {
     let number = $('#num-questions-entry').val();
     console.log('Get number = ' + number);
 
+
     //set number of questions in triviaInputValue object
     api.setTriviaInputValues(api.triviaInputValues.category, number);
 
-    //request questions from API
-    api.setSessionQuestions(api.getTriviaInputValues);
-
     //set STORE values to start of quiz
-    quiz.setSTORE(true, 0, 0, QUESTIONS.length);
+    quiz.setSTORE(true, 0, 0, 2);
+
+    //request questions from API and fill the QUESTIONS object
+    api.setSessionQuestions();
 
     render.renderStartNextButtons();
-    // render.renderQuestion();
+
   });
+
 }
 
 function handleUserInput() {
@@ -281,5 +282,5 @@ let render = new Render();
 
 $(handleUserInput);
 $(handleStartQuizClick);
-// $(handleNextClick);
-// $(handleAnswerClick);
+$(handleNextClick);
+$(handleAnswerClick);
