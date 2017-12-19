@@ -29,6 +29,8 @@ const CATEGORIES = [{
 
 let QUESTIONS = [];
 
+
+
 class TriviaApp {
 
   constructor() {
@@ -84,7 +86,7 @@ class Render {
 
   //Public Methods
   renderQuestion() {
-    console.log('renderQuestion ran');
+    console.log('renderQuestion ran' + QUESTIONS);
     $('#questions').addClass('quizContent');
     console.log('renderQuestion question =  ' + QUESTIONS[0].correct_answer);
     console.log('renderQuestion index = ' + quiz.STORE.index);
@@ -116,7 +118,7 @@ class Render {
     $('#questions').addClass('results');
     $('.results').append(`<p>Correct answer is: ${QUESTIONS[quiz.STORE.index-1].correct_answer}</p><br>`);
 
-    if (quiz.STORE.index !== api.getTriviaInputValues().amount) {
+    if (quiz.STORE.index != api.getTriviaInputValues().amount) {
       $('.results').append(`<p>Your current score is: ${quiz.STORE.correctAnswers} out of ${quiz.STORE.index} correct answers</p>`);
     } else {
       //start a new game
@@ -159,13 +161,13 @@ class API {
   }
 
   //public methods
-  setSessionQuestions() {
+  setSessionQuestions(cb) {
     console.log('setSessionQuestions ran');
     let url = this._buildCategoryURL();
     $.getJSON(url, function(response) {
       QUESTIONS = response.results;
+      cb();
       console.log('setSessionQuestions: QUESTIONS[0] = ' + QUESTIONS[0].question);
-      render.renderQuestion();
     });
 
   }
@@ -185,7 +187,7 @@ class API {
     return this.triviaInputValues;
   }
 
-  setTriviaInputValues(category = 16, amt = 1, type = 'multiple', difficulty = 'easy') {
+  setTriviaInputValues(category, amt, type = 'multiple', difficulty = 'easy') {
     this.triviaInputValues = {
       category: category,
       amount: amt,
@@ -237,17 +239,18 @@ function handleStartQuizClick() {
     let number = $('#num-questions-entry').val();
     console.log('Get number = ' + number);
 
-
     //set number of questions in triviaInputValue object
     api.setTriviaInputValues(api.triviaInputValues.category, number);
 
     //set STORE values to start of quiz
-    quiz.setSTORE(true, 0, 0, 2);
+    quiz.setSTORE(true, 0, 0, api.getTriviaInputValues.amount);
+    //change button from Start to Next
+    render.renderStartNextButtons();
 
     //request questions from API and fill the QUESTIONS object
-    api.setSessionQuestions();
-
-    render.renderStartNextButtons();
+    api.setSessionQuestions(() => {
+      render.renderQuestion();
+    });
 
   });
 
@@ -270,8 +273,6 @@ function handleUserInput() {
 
     }); //end find category number
   }); //end on click - category
-
-  // $('.startQuiz').attr('enable');
 
 } //handleUserInput
 
