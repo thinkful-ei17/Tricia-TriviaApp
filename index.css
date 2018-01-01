@@ -1,13 +1,14 @@
+html {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
 body {
     background-image: url(https://i.imgur.com/nYtLwxP.jpg);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-}
-
-html {
-    height: 100%;
-    margin: 0;
 }
 
 header {
@@ -41,7 +42,8 @@ h3 {
 }
 
 .startQuiz,
-.next {
+.next,
+.submit {
     background-color: #CD853F;
     border-radius: 12px;
     border: 1px solid black;
@@ -55,25 +57,30 @@ h3 {
 }
 
 .startQuiz:active,
-.next:active {
+.next:active,
+.submit:active {
     /*color: #FF8C00;*/
     box-shadow: 0 5px #666;
     transform: translateY(4px);
 }
 
 .startQuiz:hover,
-.next:hover {
+.next:hover,
+.submit:hover {
     background-color: #8B4513;
 }
 
-.quizContent,
-.results {
-    border: 2px solid black;
+
+/* .quizContent,*/
+
+.results,
+fieldset {
+    /* border: 2px solid black; */
     margin: 70px auto;
     height: 300px;
     width: 500px;
     background-color: #F5F5DC;
-    border-radius: 25px
+    /* border-radius: 25px; */
 }
 
 form {

@@ -39,12 +39,13 @@ class TriviaApp {
 
   //Public Methods
 
-  setSTORE(start, index, correctAnswers, totalQuestions) {
+  setSTORE(start, index, correctAnswers, totalQuestions, state) {
     this.STORE = {
       startQuiz: start,
       index: index,
       correctAnswers: correctAnswers,
       totalQuestions: totalQuestions,
+      quizState: state,
     };
   }
 
@@ -61,10 +62,15 @@ class TriviaApp {
   }
 
   startNewQuiz() {
-    this.STORE.index = 0;
-    this.STORE.startQuiz = false;
-    this.STORE.correctAnswers = 0;
-    this.totalQuestions = 0;
+    console.log('startNewQuiz ran');
+    this.STORE = {
+      index: 0,
+      startQuiz: false,
+      correctAnswers: 0,
+      totalQuestions: 0,
+      quizState: 'start',
+    };
+    QUESTIONS = [];
   }
 } //TriviaApp class
 
@@ -77,45 +83,62 @@ class Render {
   //Private Methods
   _questionTemplate(item) {
     console.log('_questionTemplate ran');
-    return `<p>Question ${quiz.STORE.index+1}: ${item.question}</p>
+    return `<fieldset><legend>Question ${quiz.STORE.index+1}</legend><p>${item.question}</p>
       <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[0]}> ${item.incorrect_answers[0]}<br>
       <input type= "radio" name= "answer" id= "radio" value= ${item.correct_answer}> ${item.correct_answer}<br>
       <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[2]}> ${item.incorrect_answers[2]}<br>
-      <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[1]}> ${item.incorrect_answers[1]}<br>`;
+      <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[1]}> ${item.incorrect_answers[1]}<br></fieldset>`;
   } //_questionTemplate
 
   //Public Methods
   renderQuestion() {
     console.log('renderQuestion ran' + QUESTIONS);
     $('#questions').addClass('quizContent');
-    console.log('renderQuestion question =  ' + QUESTIONS[0].correct_answer);
+    console.log('renderQuestion question answer =  ' + QUESTIONS[0].correct_answer);
     console.log('renderQuestion index = ' + quiz.STORE.index);
     let question = this._questionTemplate(QUESTIONS[quiz.STORE.index]);
 
     $('#questions').html(question);
-    handleAnswerClick();
+    // handleAnswerClick();
 
   } //renderQuestion
 
 
   renderStartNextButtons() {
     console.log('renderStartNextButtonsText ran');
-    if (quiz.STORE.startQuiz) {
-      $('.buttonControl').append('<button class= "next">Next</button>');
+    console.log('quiz state = ' + quiz.STORE.quizState);
+    //change button to submit
+    if (quiz.STORE.quizState === 'submit') {
+      $('.buttonControl').append('<button class = "submit">Submit</button>');
       $('.startQuiz').remove();
+      $('.next').remove();
+      quiz.STORE.quizState = 'next';
+      handleAnswerClick();
+    }
+    //change the button to next question
+    else if (quiz.STORE.quizState === 'next') {
+      $('.buttonControl').append('<button class= "next">Next</button>');
+      $('.submit').remove();
+      quiz.STORE.quizState = 'submit';
       handleNextClick();
-    } else {
+    }
+    //change the button to a new game
+    else if (quiz.STORE.quizState === 'start') {
       $('.buttonControl').append('<button class= "startQuiz">Take the Quiz!</button>');
       $('.next').remove();
-      handleNextClick();
+      $('.submit').remove();
+      quiz.STORE.quizState = 'submit';
+      handleStartQuizClick();
     }
   } //renderStartNextButton
 
   renderResultsAndStatus() {
+    console.log('renderResultsAndStatus ran');
     $('p').remove();
     $('#radio').remove();
     $('#questions').html(' ');
     $('#questions').addClass('results');
+
     $('.results').append(`<p>Correct answer is: ${QUESTIONS[quiz.STORE.index-1].correct_answer}</p><br>`);
 
     if (quiz.STORE.index != api.getTriviaInputValues().amount) {
@@ -124,10 +147,10 @@ class Render {
       //start a new game
       $('.results').append(`<p>Your Final score is: ${quiz.STORE.correctAnswers} out of ${api.getTriviaInputValues().amount} correct answers</p>`);
       quiz.startNewQuiz();
-      render.renderStartNextButtons();
-      handleStartQuizClick();
-
+      quiz.STORE.quizState = 'start';
+      console.log('start new quiz = ' + quiz.STORE.quizState);
     }
+    render.renderStartNextButtons();
   } //renderResultsAndStatus
 
 
@@ -203,36 +226,39 @@ class API {
 
 function handleAnswerClick() {
 
-  $('input[name="answer"]').on('click', event => {
+  $('.submit').on('click', event => {
     console.log('handleAnswerClick ran');
     var answer = $('input[name="answer"]:checked').val();
-
+    console.log('answer = ' + answer);
+    console.log('quiz answer = ' + QUESTIONS[quiz.STORE.index].correct_answer);
     if (answer === QUESTIONS[quiz.STORE.index].correct_answer) {
       quiz.incrementCorrectAnswers();
     }
 
     quiz.incrementSTOREIndex();
     render.renderResultsAndStatus();
-    console.log(quiz.STORE.index);
-    console.log(quiz.STORE.correctAnswers);
+    console.log('store index = ' + quiz.STORE.index);
+    console.log('correct answers = ' + quiz.STORE.correctAnswers);
 
   });
 }
 
 function handleNextClick() {
-  $('.next').click(event => {
+  $('.next').on('click', event => {
     console.log('HandleNextClick ran');
     console.log(quiz.STORE.index, QUESTIONS.length);
-    if (quiz.STORE.index < QUESTIONS.length)
+    if (quiz.STORE.index < QUESTIONS.length) {
       render.renderQuestion();
-    else
+      render.renderStartNextButtons();
+    } else
       render.renderResultsAndStatus();
   });
 }
 
 
+
 function handleStartQuizClick() {
-  $('.startQuiz').click(event => {
+  $('.startQuiz').on('click', event => {
     console.log('handleStartQuizClick ran,');
 
     //get number of questions user input
@@ -243,7 +269,7 @@ function handleStartQuizClick() {
     api.setTriviaInputValues(api.triviaInputValues.category, number);
 
     //set STORE values to start of quiz
-    quiz.setSTORE(true, 0, 0, api.getTriviaInputValues.amount);
+    quiz.setSTORE(true, 0, 0, api.getTriviaInputValues.amount, 'submit');
     //change button from Start to Next
     render.renderStartNextButtons();
 
@@ -283,5 +309,3 @@ let render = new Render();
 
 $(handleUserInput);
 $(handleStartQuizClick);
-$(handleNextClick);
-$(handleAnswerClick);
