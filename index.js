@@ -83,54 +83,51 @@ class Render {
   //Private Methods
   _questionTemplate(item) {
     console.log('_questionTemplate ran');
-    return `<fieldset><legend>Question ${quiz.STORE.index+1}</legend><p>${item.question}</p>
-      <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[0]}> ${item.incorrect_answers[0]}<br>
-      <input type= "radio" name= "answer" id= "radio" value= ${item.correct_answer}> ${item.correct_answer}<br>
-      <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[2]}> ${item.incorrect_answers[2]}<br>
-      <input type= "radio" name= "answer" id= "radio" value= ${item.incorrect_answers[1]}> ${item.incorrect_answers[1]}<br></fieldset>`;
+    return `<fieldset><legend>${item.question}</legend>
+      <input type= "radio" name= "answer" id= "radio-0" value= "${item.incorrect_answers[0]}">
+      <label for="radio-0">${item.incorrect_answers[0]}</label></br>
+      <input type= "radio" name= "answer" id= "radio-1" value= "${item.correct_answer}"> 
+      <label for="radio-1">${item.correct_answer}</label></br>
+      <input type= "radio" name= "answer" id= "radio-2" value= "${item.incorrect_answers[2]}">
+      <label for="radio-2">${item.incorrect_answers[2]}</label></br>
+      <input type= "radio" name= "answer" id= "radio-3" value= "${item.incorrect_answers[1]}"> 
+      <label for="radio-3">${item.incorrect_answers[1]}</label></fieldset>`;
   } //_questionTemplate
 
   //Public Methods
-  renderQuestion() {
-    console.log('renderQuestion ran' + QUESTIONS);
-    $('#questions').addClass('quizContent');
-    console.log('renderQuestion question answer =  ' + QUESTIONS[0].correct_answer);
-    console.log('renderQuestion index = ' + quiz.STORE.index);
-    let question = this._questionTemplate(QUESTIONS[quiz.STORE.index]);
-
-    $('#questions').html(question);
-    // handleAnswerClick();
-
-  } //renderQuestion
-
 
   renderStartNextButtons() {
     console.log('renderStartNextButtonsText ran');
     console.log('quiz state = ' + quiz.STORE.quizState);
     //change button to submit
     if (quiz.STORE.quizState === 'submit') {
-      $('.buttonControl').append('<button class = "submit">Submit</button>');
+      $('#questions').prepend('<h3 class="buttonControl"><button type="submit" class = "submit">Submit</button></h3>');
       $('.startQuiz').remove();
       $('.next').remove();
       quiz.STORE.quizState = 'next';
-      handleAnswerClick();
     }
     //change the button to next question
     else if (quiz.STORE.quizState === 'next') {
-      $('.buttonControl').append('<button class= "next">Next</button>');
+      $('#questions').prepend('<h3 class="buttonControl"><button type="submit" class="next">Next</button></h3>');
       $('.submit').remove();
       quiz.STORE.quizState = 'submit';
-      handleNextClick();
     }
     //change the button to a new game
     else if (quiz.STORE.quizState === 'start') {
-      $('.buttonControl').append('<button class= "startQuiz">Take the Quiz!</button>');
+      $('#questions').prepend('<h3 class="buttonControl"><button type="submit" class="startQuiz">Take the Quiz!</button></h3>');
       $('.next').remove();
       $('.submit').remove();
       quiz.STORE.quizState = 'submit';
-      handleStartQuizClick();
     }
   } //renderStartNextButton
+
+
+  renderQuestion() {
+    console.log('renderQuestion ran');
+    let question = this._questionTemplate(QUESTIONS[quiz.STORE.index]);
+    $('#questions').html(question);
+  } //renderQuestion
+
 
   renderResultsAndStatus() {
     console.log('renderResultsAndStatus ran');
@@ -218,33 +215,27 @@ class API {
       difficulty: difficulty,
     };
   }
-
-  //API::setSessionQuestions
-
 } //Class API
 
 
-function handleAnswerClick() {
-
-  $('.submit').on('click', event => {
-    console.log('handleAnswerClick ran');
+function handleAnswerSelection() {
+  $('#questions').on('submit', event => {
+    event.preventDefault();
+    console.log('handleAnswerSelection ran');
     var answer = $('input[name="answer"]:checked').val();
     console.log('answer = ' + answer);
     console.log('quiz answer = ' + QUESTIONS[quiz.STORE.index].correct_answer);
     if (answer === QUESTIONS[quiz.STORE.index].correct_answer) {
       quiz.incrementCorrectAnswers();
     }
-
     quiz.incrementSTOREIndex();
     render.renderResultsAndStatus();
-    console.log('store index = ' + quiz.STORE.index);
-    console.log('correct answers = ' + quiz.STORE.correctAnswers);
-
   });
 }
 
 function handleNextClick() {
-  $('.next').on('click', event => {
+  $('#questions').on('click', '.next', event => {
+    event.preventDefault();
     console.log('HandleNextClick ran');
     console.log(quiz.STORE.index, QUESTIONS.length);
     if (quiz.STORE.index < QUESTIONS.length) {
@@ -255,57 +246,46 @@ function handleNextClick() {
   });
 }
 
-
-
 function handleStartQuizClick() {
-  $('.startQuiz').on('click', event => {
+  $('#questions').on('click', '.startQuiz', event => {
+    event.preventDefault();
     console.log('handleStartQuizClick ran,');
 
-    //get number of questions user input
+    //get number of questions and trivia catagory user input
     let number = $('#num-questions-entry').val();
-    console.log('Get number = ' + number);
-
-    //set number of questions in triviaInputValue object
-    api.setTriviaInputValues(api.triviaInputValues.category, number);
-
-    //set STORE values to start of quiz
-    quiz.setSTORE(true, 0, 0, api.getTriviaInputValues.amount, 'submit');
-    //change button from Start to Next
-    render.renderStartNextButtons();
-
-    //request questions from API and fill the QUESTIONS object
-    api.setSessionQuestions(() => {
-      render.renderQuestion();
-    });
-
-  });
-
-}
-
-function handleUserInput() {
-  $('.triviaDropDown').on('click', event => {
-    console.log('handleTriviaDropDown ran');
-    let input = $('.triviaDropDown option:checked').text();
+    console.log('Input number = ' + number);
+    let triviaInput = $('#triviaDropDown').val();
+    console.log('Trivia Catagory Selection:' + triviaInput);
 
     //get quiz category from user input
     CATEGORIES.find(object => {
-      if (object.name === input) {
-        input = object.id;
+      if (object.name === triviaInput) {
+        triviaInput = object.id;
         console.log(object);
       } //end if
+    });
+    //set number of questions in triviaInputValue object
+    api.setTriviaInputValues(triviaInput, number);
 
-      //set the category in triviaInputValues object
-      api.setTriviaInputValues(input);
+    //set STORE values to start of quiz
+    quiz.setSTORE(true, 0, 0, api.getTriviaInputValues.amount, 'submit');
 
-    }); //end find category number
-  }); //end on click - category
-
-} //handleUserInput
+    //request questions from API and fill the QUESTIONS object
+    //render the questions and change button from start to submit
+    api.setSessionQuestions(() => {
+      render.renderQuestion();
+      render.renderStartNextButtons();
+    }); //end API call
+  });
+}
 
 //instantiate new API, Quiz and Render objects
 let api = new API();
 let quiz = new TriviaApp();
 let render = new Render();
 
-$(handleUserInput);
-$(handleStartQuizClick);
+$(function() {
+  handleStartQuizClick();
+  handleNextClick();
+  handleAnswerSelection();
+});

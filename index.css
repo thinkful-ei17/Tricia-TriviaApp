@@ -1,14 +1,17 @@
-html {
+/* html {
     margin-left: auto;
     margin-right: auto;
     width: 100%;
-}
+    height: 100%;
+} */
 
 body {
     background-image: url(https://i.imgur.com/nYtLwxP.jpg);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
 }
 
 header {
@@ -90,16 +93,27 @@ form {
     margin-right: 50px;
 }
 
-p {
+legend {
     position: center;
     font-size: 20px;
     color: black;
     margin-left: 30px;
     margin-top: 35px;
     margin-right: 30px;
+    padding-bottom: 25px;
 }
 
-input {
+
+/* p {
+    position: center;
+    font-size: 20px;
+    color: black;
+    margin-left: 30px;
+    margin-top: 35px;
+    margin-right: 30px;
+} */
+
+label {
     position: center;
     margin-top: 15px;
     margin-bottom: 15px;
